@@ -1,0 +1,129 @@
+
+<html>
+    <head>
+        <title>threejs_challenge_4</title>
+        <script src = "C:\Users\ntpunsl\Desktop\ntpuMap\three.js-master\three.js-master\build\three.js"></script> 
+        <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>      
+    </head>
+    <body>
+    </body> 
+</html>
+
+<script>    
+    let scene, camera, renderer, sphere;
+    let spheres = [];
+
+    let randomInRange = function(from, to) {
+        let x = Math.random() * (to - from);
+        return x + from;
+    };
+
+    class Sphere {
+        constructor() {
+
+            let geometry = new THREE.SphereGeometry(5, 100, 100);
+            let material = new THREE.MeshPhongMaterial({color: 0Xffffff,shininess: 100});
+
+            this.x = randomInRange(-100,100)
+            while(this.x < 5 && this.x > -5){
+                this.x = randomInRange(-100,100)
+            }
+
+            this.y = randomInRange(-100,100)
+            while(this.y < 5 && this.y > -5){
+                this.y = randomInRange(-100,100)
+            }
+
+            this.z = randomInRange(-100,100)
+            while(this.z < 5 && this.z > -5){
+                this.z = randomInRange(-100,100)
+            }
+            sphere = new THREE.Mesh(geometry, material);
+            sphere.position.set(this.x, this.y, this.z);
+            this.object = sphere;
+            
+            scene.add(sphere);
+
+            this.ADD = randomInRange(0.01, 0.05);
+            this.THETA = 0;
+        }
+        
+        advance() {
+
+            this.object.position.y = this.y * Math.cos(this.THETA);
+            this.object.position.x = this.x * Math.sin(this.THETA);
+            this.object.position.z = this.z * Math.cos(this.THETA);
+
+            this.THETA += this.ADD;
+        }
+    };
+
+    let createSphere = function() {
+
+        for(var i=0;i<10;i++){
+            spheres.push(new Sphere());
+        }
+    };
+    
+    
+    // set up the environment - 
+    // initiallize scene, camera, objects and renderer
+    let init = function() {
+        // create the scene
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+        
+        // create an locate the camera
+        camera = new THREE.PerspectiveCamera(75, 
+                        window.innerWidth / window.innerHeight, 
+                        1, 1000);
+        camera.position.set(0,20,100);
+        camera.lookAt(scene.position);
+
+        light = new THREE.PointLight(0xffffff, 2, 300, 2);
+        light.position.set(0,0,0)
+        scene.add(light)
+        
+        createSphere();
+
+        // create the renderer   
+        renderer = new THREE.WebGLRenderer();   
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFShadowMap;
+
+        // 建立 OrbitControls
+        cameraControl = new THREE.OrbitControls(camera, renderer.domElement)
+        cameraControl.enableDamping = true // 啟用阻尼效果
+        cameraControl.dampingFactor = 0.25 // 阻尼系數
+        //cameraControl.autoRotate = true    // 啟用自動旋轉
+        
+        document.body.appendChild(renderer.domElement);
+    };
+   
+    
+    // main animation loop - calls 50-60 times per second.
+    let mainLoop = function() {
+        
+        spheres.forEach(sphere => {
+            sphere.advance();
+        })
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(mainLoop);
+    };
+
+    // 監聽螢幕寬高來做簡單 RWD 設定
+    window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+    });
+    
+    ///////////////////////////////////////////////
+    init();
+    mainLoop();
+</script>
+
+
+       

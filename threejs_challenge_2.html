@@ -1,0 +1,119 @@
+
+<html>
+    <head>
+        <title>threejs_challenge_2</title>
+        <script src = "C:\Users\ntpunsl\Desktop\ntpuMap\three.js-master\three.js-master\build\three.js"></script> 
+        <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>      
+    </head>
+    <body>
+    </body> 
+</html>
+
+<script>    
+    let scene, camera, renderer, sphere, rayCast, mouse;
+    let spheres = [];
+    
+    let randomInRange = function(from, to) {
+        let x = Math.random() * (to - from);
+        return x + from;
+    };
+
+    let onMouseClick = function(e) {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = - (e.clientY / window.innerHeight) * 2 + 1;
+        mouse.z = 1;
+        
+        rayCast.setFromCamera(mouse, camera);
+        let intersects = rayCast.intersectObjects(scene.children);
+        for(var i=0;i<intersects.length;i++){
+            if(intersects[i].object.material.visible == true){
+                intersects[i].object.material.visible = false;
+                break;
+            }
+            else{
+                continue;
+            }
+        }
+    };
+
+    let createSphere = function() {
+
+        let r = randomInRange(2, 4);
+        let geometry = new THREE.SphereGeometry(r, 32, 32)
+        let material = new THREE.MeshPhongMaterial( {color: Math.random() * 0xffffff} );
+        sphere = new THREE.Mesh( geometry, material );
+        sphere.position.z = randomInRange(-40, 15);
+        sphere.position.x = randomInRange(-40, 40);
+        sphere.position.y = randomInRange(0, 5);
+        spheres.push(sphere);
+        scene.add(sphere);
+    };
+    
+    
+    // set up the environment - 
+    // initiallize scene, camera, objects and renderer
+    let init = function() {
+        // create the scene
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffffff);
+        
+        // create an locate the camera
+        camera = new THREE.PerspectiveCamera(75, 
+                        window.innerWidth / window.innerHeight, 
+                        1, 1000);
+        camera.position.set(0,0,50);
+        camera.lookAt(scene.position);
+        
+        var light = new THREE.DirectionalLight(0xffffff);
+        scene.add( light );
+
+        rayCast = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+        mouse.x = mouse.y = -1;
+
+        // create the renderer   
+        renderer = new THREE.WebGLRenderer();   
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // 建立 OrbitControls
+        cameraControl = new THREE.OrbitControls(camera, renderer.domElement)
+        cameraControl.enableDamping = true // 啟用阻尼效果
+        cameraControl.dampingFactor = 0.25 // 阻尼系數
+        //cameraControl.autoRotate = true    // 啟用自動旋轉
+        
+        document.body.appendChild(renderer.domElement);
+        document.addEventListener("click", onMouseClick, false);
+    };
+   
+    
+    // main animation loop - calls 50-60 times per second.
+    let mainLoop = function() {
+        
+        if(Math.random() > 0.98){
+            createSphere();
+        }
+        spheres.forEach(sphere => {
+            sphere.position.y += Math.random()*0.1;
+            if(sphere.position.y > 20){
+                sphere.material.visible = false;
+            }
+        })
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(mainLoop);
+    };
+
+    // 監聽螢幕寬高來做簡單 RWD 設定
+    window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+    });
+    
+    ///////////////////////////////////////////////
+    init();
+    mainLoop();
+</script>
+
+
+       
